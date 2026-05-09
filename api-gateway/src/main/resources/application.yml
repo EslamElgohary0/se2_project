@@ -1,0 +1,73 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+
+      routes:
+
+
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+
+
+        - id: auth-admin
+          uri: lb://auth-service
+          predicates:
+            - Path=*/api/admin/*
+          filters:
+            - AuthenticationFilter
+
+
+        - id: wallet-service
+          uri: lb://wallet-service
+          predicates:
+            - Path=/api/wallet/**
+          filters:
+            - AuthenticationFilter
+
+
+        - id: transaction-service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/api/transactions/**
+          filters:
+            - AuthenticationFilter
+
+
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - AuthenticationFilter
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: ewallet-super-secret-key-2024-must-be-at-least-256-bits-long!!
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,routes
+  endpoint:
+    health:
+      show-details: always
